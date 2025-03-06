@@ -101,4 +101,4 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin ghcr
 
           # Push the image to the 'ghcr' remote with the desired tag
-          singularity push ciroh-ngen-visualizer-singularity.sif ghcr/${{ env.IMAGE_NAME }}:latest_x86            
+          singularity push ciroh-ngen-visualizer-singularity.sif ghcr://${{ env.IMAGE_NAME }}:latest_x86
