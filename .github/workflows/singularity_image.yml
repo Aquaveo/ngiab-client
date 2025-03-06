@@ -87,12 +87,18 @@ jobs:
            # Clean up
            rm "$TOKEN_FILE"
         
-      - name: Login and Push to Github Registry
+      - name: Configure ORAS Remote
+        run: |
+          # Add a new remote named 'ghcr' pointing to oras://ghcr.io
+          singularity remote add --no-login ghcr oras://ghcr.io
+
+      - name: Login and Push to GitHub Registry
         env:
-          REGISTRY: ghcr.io
           IMAGE_NAME: ${{ github.repository }}
           GHCR_USERNAME: ${{ github.actor }}
-        run: |         
-              echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login -u ${{ env.GHCR_USERNAME }} --password-stdin oras://${{ env.REGISTRY }}
-              singularity push container.sif oras://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest_x86
-            
+        run: |
+          # Login to the 'ghcr' remote with your GitHub token
+          echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin ghcr
+
+          # Push the image to the 'ghcr' remote with the desired tag
+          singularity push ciroh-ngen-visualizer-singularity.sif ghcr/${{ env.IMAGE_NAME }}:latest_x86            
