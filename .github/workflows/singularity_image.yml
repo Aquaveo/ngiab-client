@@ -21,18 +21,6 @@ jobs:
       - name: Singularity setup
         uses: singularityhub/install-singularity@main
 
-      - name: Configure ORAS Remote
-        run: |
-          singularity remote add --no-login ghcr oras://ghcr.io
-
-      - name: Login and Push to GitHub Registry
-        env:
-          IMAGE_NAME: aquaveo/ciroh-ngen-visualizer-singularity
-          GHCR_USERNAME: ${{ github.actor }}
-        run: |
-          # Login to the 'ghcr' remote with your GitHub token
-          echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-
       - name: Import and Verify Singularity key
         env:
           KEY_B64: ${{ secrets.SIGNING_KEY }}
@@ -109,7 +97,7 @@ jobs:
           GHCR_USERNAME: ${{ github.actor }}
         run: |
           # Login to the 'ghcr' remote with your GitHub token
-          echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
+          echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin ghcr
 
           # Push the image to the 'ghcr' remote with the desired tag
           singularity push ciroh-ngen-visualizer-singularity.sif oras://ghcr.io/${{ env.IMAGE_NAME }}:latest_x86
