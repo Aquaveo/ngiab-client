@@ -94,7 +94,7 @@ jobs:
       - name: Login and Push to GitHub Registry
         env:
           IMAGE_NAME: aquaveo/ciroh-ngen-visualizer-singularity
-          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_USERNAME: aquaveo
         run: |
           # Login to the 'ghcr' remote with your GitHub token
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin ghcr
