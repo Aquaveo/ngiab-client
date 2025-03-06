@@ -94,5 +94,5 @@ jobs:
           GHCR_USERNAME: ${{ github.actor }}
         run: |         
               echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login -u ${{ env.GHCR_USERNAME }} --password-stdin oras://${{ env.REGISTRY }}
-              singularity push container.sif oras://${{ env.REGISTRY }}/${{ IMAGE_NAME }}:latest_x86
+              singularity push container.sif oras://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest_x86
             
