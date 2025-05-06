@@ -1,4 +1,11 @@
+
 # Next Gen in a Box Visualizer
+
+``` diff
+- NOTE: This repository has been moved to it's new location : https://github.com/CIROH-UA/ngiab-client
+- Please do all active work on : https://github.com/CIROH-UA/ngiab-client
+- This repository has been archived and made Read Only.
+```
 
 This app was created using an experimental Tethys + React app scaffold. It uses React for the frontend of the app and Tethys as the backend.
 
