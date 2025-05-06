@@ -7,9 +7,12 @@ import 'App.scss';
 
 import NGIABView from 'views/ngiab/ngiab_view';
 
+import DataStreamView from 'views/datastream/datastreamView';
+
 
 function App() {
   const PATH_HOME = '/';
+  const PATH_DATASTREAM = '/datastream';
 
   return (
     <>
@@ -17,11 +20,13 @@ function App() {
           <Loader>
             <Layout 
               navLinks={[
-                {title: 'Model Ouput Visualization', to: PATH_HOME, eventKey: 'link-home'},
+                {title: 'Ouputs Visualization', to: PATH_HOME, eventKey: 'link-home'},
+                {title: 'Datastream Visualization', to: PATH_DATASTREAM, eventKey: 'link-datastream'},
 
               ]}
               routes={[
                 <Route path={PATH_HOME} element={<NGIABView />} key='route-home' />,
+                <Route path={PATH_DATASTREAM} element={<DataStreamView />} key='route-datastream' />,
               ]}
             />
           </Loader>

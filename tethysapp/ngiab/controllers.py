@@ -21,7 +21,18 @@ from .utils import (
     find_gpkg_file_path,
     append_ngen_usgs_column,
     append_nwm_usgs_column,
-    get_model_runs_selectable
+    get_model_runs_selectable,
+)
+from .datastream_utils import (
+    list_public_s3_folders,
+    get_select_from_s3,
+    remove_forcings_from_forecast_list,
+    make_datastream_conf,
+    download_and_extract_tar_from_s3,
+    get_dates_select_from_s3,
+    get_datastream_model_runs_selectable,
+    check_if_datastream_data_exists,
+    get_datastream_id_from_conf_file
 )
 
 from .app import App
@@ -40,9 +51,21 @@ def home(request):
     return App.render(request, "index.html")
 
 
+@controller
+def importModelRuns(request):
+    print("Importing model runs...")
+    response_object = {}
+    model_run_name = request.GET.get("model_run_name")
+    model_run_s3_path = request.GET.get("model_run_s3_path")
+    response_object["model_run_name"] = model_run_name
+    response_object["model_run_s3_path"] = model_run_s3_path
+    return JsonResponse(response_object)
+    
+
 
 @controller
 def getModelRuns(request):
+    print("Getting model runs...")
     model_run_select =  get_model_runs_selectable()
     return JsonResponse({
         "model_runs": model_run_select
@@ -277,3 +300,116 @@ def getTeehrVariables(request):
     except Exception:
         vars = []
     return JsonResponse({"teehr_variables": vars})
+
+
+@controller
+def makeDatastreamConf(request):
+    """
+    Create the datastream configuration file.
+    """
+    print("Creating datastream configuration file...")
+    try:
+        make_datastream_conf()
+        return JsonResponse({"status": "success"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
+@controller
+def getDataStreamNgiabDates(request):
+    """
+    Get the list of dates in the bucket.
+    """
+    print("Getting list of dates in the bucket...")
+    ngen_dates = list_public_s3_folders(prefix="v2.2/")
+    ngen_dates = [date for date in ngen_dates if date != "ngen.20250429"] # small patch, this date has both the new and old format
+    list_dates = get_dates_select_from_s3(ngen_dates)
+    
+    
+    return JsonResponse({"ngen_dates": list_dates})
+
+@controller
+def getDataStreamNgiabAvailableForecast(request):
+    """
+    Get the list of available forecast in the bucket.
+    """
+    print("Getting list of available forecast in the bucket...")
+    avail_date = request.GET.get("avail_date")
+    ngen_forecast = list_public_s3_folders(prefix=f"v2.2/{avail_date}/")
+    clean_forecast_list = remove_forcings_from_forecast_list(ngen_forecast)
+    list_forecast = get_select_from_s3(clean_forecast_list)
+    return JsonResponse({"ngen_forecast": list_forecast})
+
+
+@controller
+def getDataStreamNgiabAvailableVpus(request):
+    """
+    Get the list of available vpus
+    """
+    print("Getting list of available vpus in the bucket...")
+    avail_date = request.GET.get("avail_date")
+    ngen_forecast = request.GET.get("ngen_forecast")
+    prefix_path = f"v2.2/{avail_date}/{ngen_forecast}/"
+    if request.GET.get("ngen_cycle") is not None:
+        ngen_cycle = request.GET.get("ngen_cycle")
+        prefix_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_cycle}/"
+    if request.GET.get("ngen_ensemble") is not None:
+        ngen_ensemble = request.GET.get("ngen_ensemble")
+        prefix_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_cycle}/{ngen_ensemble}/"
+
+    ngen_vpu = list_public_s3_folders(prefix=prefix_path)
+    dict_vpus = get_select_from_s3(ngen_vpu)
+    return JsonResponse({"ngen_vpus": dict_vpus})
+
+
+@controller
+def getDataStreamNgiabAvailableCycles(request):
+    print("Getting list of available cycles in the bucket...")
+    avail_date = request.GET.get("avail_date")
+    ngen_forecast = request.GET.get("ngen_forecast")
+    prefix_path = f"v2.2/{avail_date}/{ngen_forecast}/"
+    ngen_cycles = list_public_s3_folders(prefix=prefix_path)
+    dict_cycles = get_select_from_s3(ngen_cycles)
+    return JsonResponse({"ngen_cycles": dict_cycles})
+
+@controller
+def getDataStreamNgiabAvailableEnsembles(request):
+    print("Getting list of available ensembles in the bucket...")
+    avail_date = request.GET.get("avail_date")
+    ngen_forecast = request.GET.get("ngen_forecast")
+    ngen_cycle = request.GET.get("ngen_cycle")
+    prefix_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_cycle}/"
+    ngen_ensembles = list_public_s3_folders(prefix=prefix_path)
+    dict_ensembles = get_select_from_s3(ngen_ensembles)
+    return JsonResponse({"ngen_ensembles": dict_ensembles, "need_ensembles": True})
+
+@controller
+def getDataStreamTarFile(request):
+    """
+    Get the tar file from the bucket.
+    """
+    print("Getting tar file from the bucket...")
+    avail_date = request.GET.get("avail_date")
+    ngen_forecast = request.GET.get("ngen_forecast")
+    ngen_vpu = request.GET.get("ngen_vpu")
+    tar_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_vpu}/ngen-run.tar.gz"
+    if request.GET.get("ngen_cycle") is not None:
+        ngen_cycle = request.GET.get("ngen_cycle")
+        tar_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_cycle}/{ngen_vpu}/ngen-run.tar.gz"
+    if request.GET.get("ngen_ensemble") is not None:
+        ngen_ensemble = request.GET.get("ngen_ensemble")
+        tar_path = f"v2.2/{avail_date}/{ngen_forecast}/{ngen_cycle}/{ngen_ensemble}/{ngen_vpu}/ngen-run.tar.gz"
+    name_folder = f"{avail_date}_{ngen_forecast}_{ngen_vpu}"
+    data_was_downloaded = check_if_datastream_data_exists(name_folder)
+    if data_was_downloaded:
+        unique_id = get_datastream_id_from_conf_file(name_folder)
+    else:
+        unique_id = download_and_extract_tar_from_s3(tar_key=tar_path,name_folder=name_folder) 
+    return JsonResponse({"id": unique_id})
+
+
+@controller
+def getDataStreamModelRuns(request):
+    datastream_model_run_select =  get_datastream_model_runs_selectable()
+    return JsonResponse({
+        "datastream_model_runs": datastream_model_run_select
+    })

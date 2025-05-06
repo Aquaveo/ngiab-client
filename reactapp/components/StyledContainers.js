@@ -4,16 +4,18 @@ import useTheme from 'hooks/useTheme';
 
 // HydroFabricContainer
 const StyledHydroFabricContainer = styled.div`
-  flex: ${(props) => (props.fullScreen ? '1 1 0%' : '1 1 40%')};
-  height: ${(props) => (props.fullScreen ? '0%' : '40%;')};
-  // display: ${(props) => (props.fullScreen ? 'none' : 'block')};
-  order: 2;
+  // flex: ${(props) => (props.$fullScreen ? '1 1 0%' : '1 1 40%')};
+  height: ${(props) => (props.$fullScreen ? '0%' : '40%;')};
+  // order: 2;
   width: ${(props) => (props.isModelRunListOpen ? '80%' : '100%')};
   margin-left: ${(props) => (props.isModelRunListOpen ? '20%' : '0%')};
-  padding: ${(props) => (props.fullScreen ? '0px' : '5px;')}; 
-  background-color: ${(props) =>
-    props.theme === 'dark' ? '#4f5b67' : '#ffffff'};
-  color: ${(props) => (props.theme === 'dark' ? '#ffffff' : '#000000')};
+  padding: ${(props) => (props.$fullScreen ? '0px' : '5px;')}; 
+  background-color: ${(props) => props.theme === 'dark' ? '#4f5b67' : '#ffffff'};
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1001;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   
@@ -37,8 +39,7 @@ const StyledHydroFabricPlotContainer = styled.div`
   height: 300px;
   order: 1;
   flex: 1 1 80%;
-  background-color: ${(props) =>
-    props.theme === 'dark' ? '#4f5b67' : '#f9f9f9'};
+  background-color: ${(props) => props.theme === 'dark' ? '#4f5b67' : '#f9f9f9'};
 `;
 
 export const HydroFabricPlotContainer = (props) => {
@@ -66,11 +67,11 @@ export const SelectContainer = (props) => {
 
 // MapContainer
 const StyledMapContainer = styled.div`
-  flex: ${(props) => (props.fullScreen ? '1 1 100%' : '1 1 60%')};
+  flex: ${(props) => (props.$fullScreen ? '1 1 100%' : '1 1 60%')};
   order: 1;
   width: 100%;
   overflow-y: hidden;
-  height: ${(props) => (props.fullScreen ? '100%' : '60%')};
+  height: ${(props) => (props.$fullScreen ? '100%' : '60%')};
   background-color: ${(props) =>
     props.theme === 'dark' ? '#1f1f1f' : '#f9f9f9'};
 `;
